@@ -113,10 +113,86 @@ Proof.
         reflexivity.
 Qed.
 
-
 Theorem del_4 {A : Type} `{EqDec A} (x y : A) (ls : list A) :
   del1 x (del1 y ls) = del1 y (del1 x ls).
 Proof.
   induction ls.
   + reflexivity.
-  + 
+  + simpl. 
+    - destruct (equiv_dec a y).
+      * destruct (equiv_dec a x).
+        rewrite e0 in e.
+        clear IHls. 
+        induction ls.
+        ++ reflexivity.
+        ++ simpl del1.
+           destruct (equiv_dec a0 x).
+           -- destruct (equiv_dec a0 y).
+              ** reflexivity.
+              ** rewrite <- e in c.
+                 contradiction.
+           -- destruct (equiv_dec a0 y).
+              +++ rewrite <- e in e1.
+                  contradiction.
+              +++ rewrite IHls.
+                  reflexivity.
+        ++ simpl. destruct (equiv_dec a y).
+           -- reflexivity.
+           -- contradiction.
+      * destruct (equiv_dec a x).
+        simpl. destruct (equiv_dec a x).
+        ++ reflexivity.
+        ++ contradiction.
+        ++ simpl. destruct (equiv_dec a x).
+           -- contradiction.
+           -- destruct (equiv_dec a y).
+              ** contradiction.
+              ** rewrite IHls.
+                 reflexivity.
+Qed.
+(*
+Lemma helper2 {A : Type} `{EqDec A} (x : A) (ls : list A):
+  delall x ls = del1 x (delall x ls).
+Proof.
+  induction ls.
+  + reflexivity.
+  + simpl. destruct (equiv_decb a x) eqn:?.
+    apply IHls. simpl. unfold "==b" in Heqb. destruct (equiv_dec a x).
+    - discriminate.
+    - rewrite IHls at 1. reflexivity.
+Qed.
+*)
+Theorem del_5 {A : Type} `{EqDec A}(x y : A)(ls : list A) : 
+  delall x (del1 y ls) = del1 y (delall x ls).
+Proof.
+  induction ls.
+  + reflexivity.
+  + simpl. unfold "==b". destruct (equiv_dec a x) eqn:?.
+    - destruct (equiv_dec a y).
+      * assert (e1 := e0). rewrite e in e0.
+        clear IHls. induction ls. 
+        ++ reflexivity.
+        ++ simpl. unfold "==b". destruct (equiv_dec a0 x).
+              -- apply IHls.
+              -- simpl. destruct (equiv_dec a0 y).
+                 ** rewrite <- e0 in e2. contradiction.
+                 ** rewrite IHls at 1. reflexivity.
+      * simpl. unfold "==b". rewrite Heqs. apply IHls.
+    - simpl. destruct (equiv_dec a y).  
+      * reflexivity.
+      * simpl. unfold "==b". rewrite Heqs. rewrite IHls. reflexivity.
+Qed.
+
+Theorem del_6 {A : Type} `{EqDec A} (x y : A)(zs : list A): 
+  delall x (delall y zs) = delall y (delall x zs).
+Proof.
+  induction zs.
+  + reflexivity.
+  + simpl. destruct (equiv_decb a y) eqn:? ; destruct (equiv_decb a x) eqn:?.
+    - apply IHzs.
+    - simpl. rewrite Heqb. apply IHzs.
+    - simpl. rewrite Heqb0. apply IHzs.
+    - simpl. rewrite Heqb. rewrite Heqb0.
+      rewrite IHzs. reflexivity.
+Qed.
+

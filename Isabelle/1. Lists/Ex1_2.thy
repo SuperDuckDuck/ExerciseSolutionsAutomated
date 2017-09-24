@@ -44,7 +44,39 @@ next
   assume a:"delall x (del1 y zs) = del1 y (delall x zs)" 
   show ?case by (metis a del1.simps(2) delall.simps(2) helper2)    
 qed
-  
+(*without metis*)
+
+theorem "delall x (del1 y zs) = del1 y (delall x zs)" 
+proof (induct zs)
+  case Nil
+  then show ?case by simp
+next
+  case (Cons a zs)
+  assume a:"delall x (del1 y zs) = del1 y (delall x zs)" 
+  show ?case 
+  proof (cases "y = a"; cases "x = a")
+    assume h1:"y = a"
+       and h2:"x = a"
+    hence tmp:"y = x" by simp
+    have "delall x (del1 y (a # zs)) = delall x zs" by (simp add : h1)
+    also have "\<dots> = del1 x (delall x zs)" by (simp add : helper2)
+    also have "\<dots> = del1 x (delall x (a#zs))" by (simp add : h2)
+    finally show ?thesis using a by (simp add : tmp)
+  next
+    assume h1:"y = a"
+       and h2:"x \<noteq> a"
+    with a show ?thesis by simp
+  next 
+    assume h1:"y \<noteq> a"
+       and h2:"x = a"
+    with a show ?thesis by simp
+  next
+    assume h1:"y \<noteq> a"
+       and h2:"x \<noteq> a"
+    with a show ?thesis by simp
+  qed
+qed
+         
 theorem "delall x (delall y zs) = delall y (delall x zs)" by (induct zs , auto)
 
 (* theorem "del1 y (replace x y xs) = del1 x xs" quickcheck *)
