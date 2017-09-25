@@ -201,7 +201,7 @@ Qed.
 Require Import  Equivalence.
 Require Import Relation_Definitions.
 
-(*proof that "del1 y (replace x y xs) = del1 x xs" is wrong*)
+(*proof that "del1 y (replace x y xs) = del1 x xs" is false*)
 
 Theorem del_7: 
   ~(forall A : Type, forall rA : relation A, forall equivA : @Equivalence A rA , 
