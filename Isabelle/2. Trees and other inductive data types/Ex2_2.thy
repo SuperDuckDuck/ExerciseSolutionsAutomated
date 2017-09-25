@@ -130,7 +130,27 @@ definition tree_sum :: "nat tree \<Rightarrow> nat" where
   
 declare tree_sum_def [simp]  
   
-lemma " x + foldl_tree (op +)"  
+lemma helper3 : fixes x::nat shows  " x + foldl_tree (op +) 0 t = foldl_tree (op +) x t"
+proof (induction t arbitrary : x)
+  case Tip
+  then show ?case by simp
+next
+  case (Node t1 x2 t2)
+    
+  assume h1:"\<And>x .x + foldl_tree op + 0 t1 = foldl_tree op + x t1"
+     and h2:"\<And>x. x + foldl_tree op + 0 t2 = foldl_tree op + x t2"
+     
+  have "x + foldl_tree op + 0 (Node t1 x2 t2)  = x + foldl_tree op + (foldl_tree op + x2 t2) t1" by simp
+  also have "\<dots> = x + (foldl_tree op + x2 t2 + foldl_tree op + 0 t1)" by (subst h1, rule refl)
+  also have "\<dots> = x + foldl_tree op + x2 t2 + foldl_tree op + 0 t1" by simp
+  also have "\<dots> = x + (x2 + foldl_tree op + 0 t2) + foldl_tree op + 0 t1" by (simp add : h2)
+  also have "\<dots> =  x + x2 + foldl_tree op + 0 t2 + foldl_tree op + 0 t1" by simp
+  also have "\<dots> = foldl_tree op + (op + x x2) t2 + foldl_tree op + 0 t1" by (simp add : h2)
+  also have "\<dots> = foldl_tree op + (foldl_tree op + (op + x x2) t2) t1" by (simp add : h1)
+  also have "\<dots> =  foldl_tree op + x (Node t1 x2 t2)" by simp
+  finally show ?case by assumption
+qed
+  
   
 lemma "tree_sum t = sum (preorder t)"
 proof (induct t)
@@ -143,11 +163,11 @@ next
   have "Ex2_2.sum (preorder (Node t1 x2 t2)) = x2 + sum (preorder t1) + sum (preorder t2)" by simp
   also have "\<dots> = x2 + tree_sum t1 + tree_sum t2" by (subst hyp1, subst hyp2, rule refl)
   also have "\<dots> = x2 + foldl_tree (op +) 0 t1 + foldl_tree (op +) 0 t2" by simp
-  note this
-  have "tree_sum (Node t1 x2 t2) =  foldl_tree (op +) (foldl_tree (op +) x2 t2) t1 " by simp 
-  also have "\<dots> = " by simp
-      
-  then show ?case by 
+  also have "\<dots> =  x2 + foldl_tree (op +) 0 t2 + foldl_tree (op +) 0 t1" by simp
+  also have "\<dots> = foldl_tree (op +) x2 t2 + foldl_tree (op +) 0 t1" by (simp add : helper3)
+  also have "\<dots> = foldl_tree (op +) (foldl_tree (op +) x2 t2) t1" by (simp add : helper3)
+  also have "\<dots> = foldl_tree (op +) 0 (Node t1 x2 t2)" by simp
+  finally show ?case by simp
 qed
   
   

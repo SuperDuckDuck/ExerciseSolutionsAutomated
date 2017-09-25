@@ -150,6 +150,7 @@ Proof.
               ** rewrite IHls.
                  reflexivity.
 Qed.
+
 (*
 Lemma helper2 {A : Type} `{EqDec A} (x : A) (ls : list A):
   delall x ls = del1 x (delall x ls).
@@ -162,6 +163,7 @@ Proof.
     - rewrite IHls at 1. reflexivity.
 Qed.
 *)
+
 Theorem del_5 {A : Type} `{EqDec A}(x y : A)(ls : list A) : 
   delall x (del1 y ls) = del1 y (delall x ls).
 Proof.
@@ -195,4 +197,91 @@ Proof.
     - simpl. rewrite Heqb. rewrite Heqb0.
       rewrite IHzs. reflexivity.
 Qed.
+
+Require Import  Equivalence.
+Require Import Relation_Definitions.
+
+(*proof that "del1 y (replace x y xs) = del1 x xs" is wrong*)
+
+Theorem del_7: 
+  ~(forall A : Type, forall rA : relation A, forall equivA : @Equivalence A rA , 
+  forall edA : @EqDec A rA equivA , forall x y : A, forall xs : list A, 
+  del1 y (replace x y xs) = del1 x xs).
+Proof.
+  intro.
+  assert (H0 := H nat _ _ _ 1 2 [1;1]).
+  discriminate.
+Qed.
+
+Theorem del_8:
+  delall 2 (replace 1 2 [2;1]) = delall 1 [2;1] -> False.
+Proof.
+  intro.
+  discriminate.
+Qed.
+
+Theorem del_9 {A : Type} `{EqDec A} (x y : A)(ls : list A):
+  replace x y (delall x ls) = delall x ls.
+Proof.
+  induction ls.
+  + reflexivity.
+  + simpl. unfold "==b". destruct (equiv_dec a x) eqn:?.
+    - rewrite IHls. reflexivity.
+    - simpl. rewrite IHls.
+      * rewrite Heqs. reflexivity.
+Qed.
+
+
+Theorem del_10 : 
+  ~(forall A : Type, forall rA : relation A , forall equivA: Equivalence rA,
+  forall edA : @EqDec A rA equivA, forall x y z : A, forall ls : list A,
+  replace x y (delall z ls) = delall z (replace x y ls)).
+Proof.
+  intro.
+  assert (H0 := H nat _ _ _ 1 2 1 [1]).
+  discriminate.
+Qed.
+
+Variable A: Type.
+
+Theorem del_11 : rev (del1 1 [1;2;1;2]) = del1 1 (rev [1;2;1;2]) -> False.
+Proof.
+  intro.
+  discriminate.
+Qed.
+  
+Lemma helper3 `{EqDec A}(x : A)(xs ys : list A): 
+  delall x (xs ++ ys) = delall x xs ++ delall x ys.
+Proof.
+  induction xs.
+  + reflexivity.
+  + rewrite <- app_comm_cons. simpl. destruct (equiv_decb a x).
+    - apply IHxs.
+    - rewrite <- app_comm_cons. rewrite IHxs. reflexivity.
+Qed.
+  
+Theorem del_12 `{EqDec A}(x : A)(ls : list A): rev (delall x ls) = delall x (rev ls).
+Proof.
+  induction ls.
+  + reflexivity.
+  + simpl. destruct (equiv_decb a x) eqn:?.
+    - rewrite helper3. simpl. rewrite Heqb. rewrite IHls. intuition.
+    - simpl. rewrite helper3. simpl. rewrite Heqb. rewrite IHls. reflexivity.
+Qed.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
