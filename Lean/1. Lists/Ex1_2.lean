@@ -1,5 +1,5 @@
 open decidable
-
+open list
 
 def replace {a : Type}[decidable_eq a]:  a → a → list a → list a 
   | _ _ [] := []
@@ -36,3 +36,41 @@ list.rec_on xs
     )
   )  
 
+lemma helper2 {A : Type} (xs ys : list A): reverse (xs ++ ys) = reverse ys ++ reverse xs := 
+list.rec_on xs 
+  ( 
+    show (reverse ([] ++ ys)) = (reverse ys ++ reverse []) , from calc
+      reverse ([] ++ ys) = reverse ys : by simp
+      ... = reverse ys ++ reverse [] : by simp
+  )
+  (
+    take aa:A,
+    take xs: list A,
+    assume hyp: reverse (xs ++ ys) = reverse ys ++ reverse xs, 
+    show reverse ((aa :: xs) ++ ys) = reverse ys ++ reverse (aa :: xs) , from calc
+      reverse ((aa :: xs) ++ ys) = reverse (aa :: xs ++ ys) : by simp
+      ... = reverse (xs ++ ys) ++ [aa] : by simp
+      ... = reverse ys ++ reverse xs  ++ [aa] : by simp[hyp]
+      ... = reverse ys ++ reverse (aa :: xs) : by simp
+  )
+
+
+
+lemma rev_1  {a : Type}[decidable_eq a] (x y : a)(ls : list a): reverse (replace x y ls) = replace x y(reverse ls) :=
+list.rec_on ls
+  (
+    show reverse (replace x y []) = replace x y (reverse []), from rfl
+  )
+  (
+   
+    take aa : a,
+    take ls : list a,
+    let tmp := (if eq x aa then y else x) in
+    assume hyp:reverse (replace x y ls) = replace x y(reverse ls),
+    show reverse (replace x y (aa :: ls)) = replace x y(reverse (aa :: ls)), from calc
+      reverse (replace x y (aa :: ls)) = reverse ( (if eq x aa then y else x) :: replace x y ls) : by simp[replace]
+      ... = reverse (replace x y ls) ++ [(if eq x aa then y else x)] : by simp[reverse]
+      ... = 
+    
+      
+  )
