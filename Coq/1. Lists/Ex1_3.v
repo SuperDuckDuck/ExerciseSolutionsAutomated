@@ -69,6 +69,85 @@ Proof.
 Qed.
 
 
+Lemma helper2{A : Type} (P : A -> bool) (xs ys: list A): 
+  exs P (xs ++ ys) = exs P xs || exs P ys.
+Proof.
+  induction xs.
+  + reflexivity.
+  + simpl. rewrite IHxs. rewrite orb_assoc. reflexivity.
+Qed.
+
+Theorem quantifying_5 {A : Type}(P : A -> bool)(xs : list A) : 
+  exs P (rev xs) = exs P xs.
+Proof.
+  induction xs.
+  + reflexivity.
+  + simpl. rewrite helper2. rewrite IHxs. rewrite orb_comm. 
+    simpl exs. rewrite <- orb_assoc. rewrite orb_false_l. reflexivity.
+Qed.
+
+
+Theorem quantifying_6 {A : Type}(P Q : A -> bool) (xs : list A): 
+  exs (fun x => P x || Q x) xs = exs P xs || exs Q xs.
+Proof.
+  induction xs.
+  + reflexivity.
+  + simpl. rewrite -> IHxs. repeat rewrite orb_assoc. 
+    rewrite <- (orb_assoc (P a) (exs P xs) (Q a)). 
+    rewrite (orb_comm (exs P xs) (Q a)). rewrite orb_assoc. reflexivity.
+Qed.
+
+Require Import Coq.Program.Basics.
+
+
+Lemma negb_alls {A : Type}(P : A -> bool)(xs : list A): 
+  negb (alls P xs)  = exs (compose negb P) xs.
+Proof.
+  induction xs.
+  + reflexivity.
+  + simpl. rewrite negb_andb. rewrite IHxs. reflexivity.
+Qed.
+
+Theorem quantifying_7 {A : Type}(P : A -> bool)(xs : list A):
+  exs P xs  = negb ((alls (compose negb P )) xs ) .
+Proof.
+  induction xs.
+  + reflexivity.
+  + simpl. rewrite  (negb_andb (compose negb P a) (alls (compose negb P) xs)).
+    rewrite <- IHxs. unfold compose. rewrite negb_involutive. reflexivity.
+Qed.
+
+
+
+  
+  
+ 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
  
  
     

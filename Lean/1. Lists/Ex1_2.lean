@@ -15,8 +15,8 @@ list.rec_on xs
      ... = replace old new [] ++ replace old new ys : by simp[replace]
   )
   (
-    take aa: A,
-    take xs: list A,
+    assume aa: A,
+    assume xs: list A,
     assume hyp:replace old new (xs ++ ys) = replace old new xs ++ replace old new ys,
     show  replace old new ((aa :: xs) ++ ys) = replace old new (aa::xs) ++ replace old new ys, from by_cases 
     (
@@ -63,8 +63,8 @@ list.rec_on ls
   )
   (
    
-    take aa : a,
-    take ls : list a,
+    assume aa : a,
+    assume ls : list a,
     let tmp := (if eq x aa then y else x) in
     assume hyp:reverse (replace x y ls) = replace x y(reverse ls),
     show reverse (replace x y (aa :: ls)) = replace x y(reverse (aa :: ls)), from calc
