@@ -118,39 +118,53 @@ Proof.
 Qed.
 
 
+Fixpoint is_in {X : Type} `{EqDec X} (x : X)(ls : list X) : bool := 
+match ls with 
+| [] => false
+| h::xs => if equiv_decb h x then true else is_in x xs
+end.
 
-  
-  
- 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+Lemma quantifying_8 {X : Type} `{EqDec X} (a : X)(xs : list X): 
+  is_in a xs = exs (fun (y:X) => equiv_decb y a) xs.
+Proof.
+  induction xs.
+  + reflexivity.
+  + simpl. destruct (a0 ==b a) eqn:?. 
+    - reflexivity. 
+    - simpl. rewrite IHxs. reflexivity.
+Qed.
 
- 
- 
-    
-    
-    
-    
+Fixpoint nodups {X : Type} `{EqDec X} (l : list X) : bool :=
+match l with 
+| [] => true
+| x::xs =>  negb (is_in x xs) && nodups xs
+end.
+
+Fixpoint deldups {X : Type} `{EqDec X} (l : list X) : list X :=
+match l with
+| [] => []
+| x::xs => let tmp := deldups xs in if is_in x tmp then tmp else x::tmp
+end.
+
+Lemma dups_1 {X : Type} `{EqDec X} (xs : list X): length (deldups xs) <= length xs.
+Proof.
+  induction xs.
+  + reflexivity.
+  + simpl. destruct (is_in a (deldups xs)).
+    - auto.
+    - simpl. apply le_n_S. exact IHxs.
+Qed.
+
+Lemma dups_2 {X : Type} `{EqDec X} (xs : list X): nodups (deldups xs) = true.
+Proof.
+  induction xs.
+  + reflexivity.
+  + simpl. destruct (is_in a (deldups xs))  eqn:?.
+    - exact IHxs.
+    - simpl. rewrite Heqb. simpl. exact IHxs.
+Qed.
+
+Lemma dups_3 : deldups (rev [1;2;3;2]) <> rev (deldups [1;2;3;2]).
+Proof. 
+  intro. simpl in H. discriminate.
+Qed.
