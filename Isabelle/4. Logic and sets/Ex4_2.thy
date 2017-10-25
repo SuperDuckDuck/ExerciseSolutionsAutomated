@@ -278,13 +278,13 @@ proof -
     assume a:A
     {
       assume "\<not>A"
-      with a have False by contradiction
+      from this a have False by (rule notE)
     }
     hence "\<not>\<not>A" by (rule notI)
   }
   thus ?thesis by (rule impI)
 qed
-  
+
 lemma "(\<not>A \<longrightarrow> B) \<longrightarrow> (\<not>B \<longrightarrow> A)"
 proof (rule impI)+
   assume "\<not>A \<longrightarrow> B"
