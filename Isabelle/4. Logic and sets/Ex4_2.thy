@@ -290,7 +290,7 @@ proof (rule impI)+
   assume "\<not>A \<longrightarrow> B"
      and "\<not>B"
   show A 
-  proof (rule FalseE)
+  proof (rule notE)
     
 lemma "(\<not>A \<longrightarrow> B) \<longrightarrow> (\<not>B \<longrightarrow> A)"
 proof - 
@@ -301,15 +301,137 @@ proof -
       {
         assume "\<not>A"
         with a have B by (rule mp)
-        with b have False ..
+        with b have A by (rule notE)
       }
-        hence A by (rule not)
-    
-    
-  
-    
-  
-  
+      hence A by (rule classical)
+    }
+    hence "\<not>B \<longrightarrow> A" by (rule impI)
+  }
+  thus ?thesis by (rule impI)
+qed
+
+lemma "((A \<longrightarrow> B) \<longrightarrow> A) \<longrightarrow> A" 
+proof (rule impI)
+  assume "(A \<longrightarrow> B) \<longrightarrow> A"
+  show A
+  proof (rule classical)
+    assume "\<not>A"
+
+        
+        
+lemma "((A \<longrightarrow> B) \<longrightarrow> A) \<longrightarrow> A" 
+proof -
+  {
+    assume a:"(A \<longrightarrow> B) \<longrightarrow> A"
+    {
+      assume b:"\<not>A"
+      {
+        assume A
+        with b have B by (rule notE)
+      }
+      hence "A \<longrightarrow> B" by (rule impI)
+      with a have A by (rule mp)
+    }
+    hence A by (rule classical)
+  }
+  thus ?thesis by (rule impI)
+qed
+
+
+lemma "A \<or> \<not>A"
+proof (rule classical)
+  {
+    assume "\<not> (A \<or> \<not>A)"
+    show "A \<or> \<not>A" 
+    proof (rule disjI2 , rule notI)
+      {
+        assume A
+        hence "A \<or> \<not>A" by (rule disjI1)
+        with \<open>\<not>(A \<or> \<not>A)\<close> show False by (rule notE)
+      }
+    qed
+  }
+qed
+
+
+
+lemma "A \<or> \<not>A"
+proof -
+  {
+    assume "\<not>(A \<or> \<not>A)"
+    {
+      assume A 
+      hence "A \<or> \<not>A" by (rule disjI1)
+      with \<open>\<not>(A \<or> \<not>A)\<close> have False by (rule notE)
+    }
+    hence "\<not>A" by (rule notI)
+    hence "A \<or> \<not>A" by (rule disjI2)
+    with \<open>\<not>(A \<or> \<not>A)\<close> have "A \<or> \<not>A" by (rule notE)
+  }
+  thus "A \<or> \<not>A" by (rule classical)
+qed
+
+lemma "A \<or> \<not>A"
+  apply (rule classical)
+  apply (rule disjI2)
+  apply (rule notI)
+  apply (rule notE[of "A \<or> \<not>A"])
+   apply assumption
+  apply (rule disjI1)
+  apply assumption
+  done
+
+
+lemma "(\<not> (A \<and> B)) = (\<not>A \<or> \<not>B)"
+proof (rule iffI)
+  assume "\<not> (A \<and> B)"
+  show "\<not> A \<or> \<not> B"
+
+
+lemma "(\<not> (A \<and> B)) = (\<not>A \<or> \<not>B)"
+proof - 
+  {
+    assume "\<not> (A \<and> B)"
+    {
+      assume "\<not> (\<not>A \<or> \<not>B)"
+      { 
+        assume A 
+        {
+          assume B 
+          with \<open>A\<close> have "A \<and> B" by (rule conjI)
+          with \<open>\<not>(A \<and> B)\<close> have False by (rule notE)
+        }
+        hence "\<not>B" by (rule notI)
+        hence "\<not>A \<or> \<not>B" by (rule disjI2)
+        with \<open>\<not> (\<not>A \<or> \<not>B)\<close> have False by (rule notE)
+      }
+      hence "\<not>A" by (rule notI)
+      hence "\<not>A \<or> \<not>B" by (rule disjI1)
+    }
+    hence "\<not> A \<or> \<not>B" by (rule classical)
+  }
+  moreover
+  {
+    assume "\<not>A \<or> \<not>B"
+    {
+      assume "A \<and> B"
+      hence A by (rule conjE)
+      from \<open>A \<and> B\<close> have B by (rule conjE)
+      {
+        assume "\<not>A"
+        with \<open>A\<close> have False by (rule notE[rotated 1])
+      }
+      hence "\<not>A \<Longrightarrow> False" by assumption
+      {
+        assume "\<not>B"
+        with \<open>B\<close> have False by (rule notE[rotated 1])
+      }
+      from \<open>\<not>A \<or> \<not>B\<close> \<open>\<not>A \<Longrightarrow> False\<close> and this have False by (rule disjE)
+    }
+    hence "\<not>(A \<and> B)" by (rule notI)
+  }
+  ultimately show ?thesis by (rule iffI)
+qed
         
 
       

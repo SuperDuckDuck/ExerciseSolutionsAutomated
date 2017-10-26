@@ -199,19 +199,31 @@ theorem "tcount (tree_of xs) x = count xs x" using helper11 by (induction xs ; s
 primrec list_of :: "bintree \<Rightarrow> nat list" where 
 "list_of leaf = []"|
 "list_of (node val lft rgt) = list_of lft @ val # list_of rgt"
-(*
-lemma helper12:"sorted (xs @ ys) = (sorted xs \<and> sorted ys)" quickcheck
-*)
-lemma helper111:"list_of (tree_of xs) = sort xs" 
-proof (induction xs)
+
+primrec ge :: "nat \<Rightarrow> nat list \<Rightarrow> bool" where
+"ge _ [] = True"|
+"ge val (x#xs) = (val \<ge> x  \<and> ge val xs)"
+
+lemma lem2:"le x (xs @ ys) = (le x xs \<and> le x ys)" by (induction xs; simp)
+
+lemma lem3:"ge x (xs @ ys) = (ge x xs \<and> ge x ys)" by (induction xs ; simp)
+
+lemma helper12 : "sorted (a @ x # b) = (sorted a \<and> sorted b \<and> ge x a \<and> le x b)" 
+proof (induction a)
   case Nil
-  then show ?case by simp
+  then show ?case by (cases "le x b" ; simp)
 next
-  case (Cons a xs)
-  then show ?case 
+  case (Cons a1 a2)
+  assume hyp:"sorted (a2 @ x # b) = (sorted a2 \<and> sorted b \<and> ge x a2 \<and> le x b)"
+
+  from hyp show ?case by (cases "sorted (a1 # a2) "; cases "sorted b" ; cases " ge x (a1 # a2)" ; cases "le x b" ; auto simp add : lem2)
 qed
 
-lemma helper12:"sorted (list_of (ins x t)) = sorted (list_of t)" 
+lemma lem4:"x < y \<Longrightarrow> ge y (list_of (ins x t)) = ge y (list_of t)" by (induction t ; simp add : lem3)
+
+lemma lem5:"y \<le> x \<Longrightarrow> le y (list_of (ins x t)) = le y (list_of t)" by (induction t;  simp add : lem2)
+
+lemma lem6:"sorted (list_of (ins x t)) = sorted (list_of t)" 
 proof (induction t)
   case leaf
   then show ?case by simp
@@ -219,18 +231,21 @@ next
   case (node x1 t1 t2)
   assume hyp1:"sorted (list_of (ins x t1)) = sorted (list_of t1)"
      and hyp2:"sorted (list_of (ins x t2)) = sorted (list_of t2)"
-(*  have "sorted (list_of (ins x (node x1 t1 t2))) =  sorted (list_of t1 @ x1 # list_of())"*)
   show ?case 
   proof (cases "x < x1")
     case True
-    hence  "sorted (list_of (ins x (node x1 t1 t2))) =  sorted (list_of (ins x t1) @ x1 # list_of t2)" by simp
-    then show ?thesis 
+    then show ?thesis by (simp add : hyp1 lem4[of x x1 t1] helper12)
   next
     case False
-    then show ?thesis sorry
+    then show ?thesis by (simp add : hyp2 lem5 helper12)
   qed
-
 qed
 
 
-theorem "sorted (list_of (tree_of xs))" 
+theorem "sorted (list_of (tree_of xs))" using lem6 by (induction xs ; simp)
+
+lemma lem7:"count (xs @ ys) x = count xs x + count ys x" by (induction xs ; simp)
+
+lemma lem8:"count (list_of (ins x t)) = count (x # list_of t)"  by (induction t ; auto simp add : lem7)
+
+theorem "count (list_of (tree_of xs)) n = count xs n" by (induction xs ; simp add : lem8)
