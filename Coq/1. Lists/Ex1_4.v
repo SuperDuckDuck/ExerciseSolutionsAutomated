@@ -105,4 +105,29 @@ Proof.
     - rewrite IHl. intuition.
     - rewrite IHl. intuition.
 Qed.
+(*
+Fixpoint fold {X Y: Type}(f : X -> Y -> Y)(ls : list X)(startVal : Y): Y :=
+match ls with 
+| [] => startVal 
+| x::xs => fold f xs (f x startVal)
+end.
+
+Example foldTest1:  fold (fun x y => x + y) [1;1;1;1;1;5] 0 = 10. Proof. reflexivity. Qed.
+Example foldTest2: fold (fun curr res => curr :: res) [1;2;3;4] [] = [4;3;2;1].
+Proof. reflexivity. Qed.
+*)
+
+
+
+
+Theorem countFilterConnection {X : Type}(P : X -> bool)(l : list X):
+  count P l = length (filter P l).
+Proof.
+  induction l.
+  + reflexivity.
+  + simpl. destruct (P a).
+    - simpl. rewrite IHl. reflexivity.
+    - auto.
+Qed.
+
 

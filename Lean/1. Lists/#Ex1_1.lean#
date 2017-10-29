@@ -21,9 +21,21 @@ list.rec_on  xs
      ... = aa :: xs ++ snoc ys val : by simp
   )
     
-lemma helper2 {A :Type} (ls : list A)(val : A) : reverse_core ls []  ++ [val] = reverse_core ls [val] :=
+
+lemma helper2 {A : Type}(ls : list A) : ∀ (xs : list A) , reverse_core ls xs = reverse_core ls [] ++ xs :=
+list.rec_on ls
+  (show (∀ xs  , reverse_core [] xs = reverse_core [] [] ++ xs), from rfl)
+  (
+   assume aa:A,
+   assume ls:list A,
+   assume hyp: reverse_core ls xs = reverse_core ls [] ++ xs,
+   show reverse_core (aa::ls) xs = reverse_core (aa::ls) [] ++ xs, from sorry
+  )
+  
+
+lemma helper3 {A :Type} (ls : list A)(val : A) : reverse ls ++ [val] = reverse_core ls [val] :=
 list.rec_on
- (show reverse_core [] [] ++ [val] = reverse_core [] [val], from rfl)
+ (show reverse [] ++ [val] = reverse_core [] [val], from rfl)
   (
     assume aa : A,
     assume ls : list A,
