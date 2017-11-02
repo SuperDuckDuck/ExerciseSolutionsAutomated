@@ -6,6 +6,7 @@ def replace {a : Type}[decidable_eq a]:  a → a → list a → list a
   | old new (x::xs) := (if eq old x then new else x) :: replace old new xs
 
  
+
 lemma helper1 {A : Type}[c: decidable_eq A] (old new : A) (xs ys : list A): replace old new (xs ++ ys) = replace old new xs ++ replace old new ys := 
 list.rec_on xs
   (
@@ -36,22 +37,35 @@ list.rec_on xs
     )
   )  
 
-lemma helper2 {A : Type} (xs ys : list A): reverse (xs ++ ys) = reverse ys ++ reverse xs := 
+
+
+lemma helper2{A:Type}  : ∀ (xs ys : list A), reverse_core xs ys  = reverse_core xs [] ++ ys
+| [] ys := rfl
+| (a::xs) ys := 
+  show reverse_core (a::xs) ys = reverse_core (a::xs) [] ++ ys , from calc 
+    reverse_core (a::xs) ys = reverse_core xs [] ++ (a::ys) : by simp[ reverse_core , helper2 xs (a::ys)]
+    ... = reverse_core xs [] ++ [a] ++ ys : by simp
+    ... = reverse_core xs [a] ++ ys : by simp[helper2 xs ([a])]
+    ... = reverse_core (a::xs) [] ++ ys : by simp[reverse_core]
+
+  
+
+lemma helper3 {A : Type} (xs ys : list A): reverse (xs ++ ys) =  reverse ys ++ reverse xs := 
 list.rec_on xs 
   ( 
     show (reverse ([] ++ ys)) = (reverse ys ++ reverse []) , from calc
       reverse ([] ++ ys) = reverse ys : by simp
-      ... = reverse ys ++ reverse [] : by simp
+      ... = reverse ys ++ reverse [] : by simp[reverse, reverse_core]
   )
   (
-    take aa:A,
-    take xs: list A,
-    assume hyp: reverse (xs ++ ys) = reverse ys ++ reverse xs, 
-    show reverse ((aa :: xs) ++ ys) = reverse ys ++ reverse (aa :: xs) , from calc
-      reverse ((aa :: xs) ++ ys) = reverse (aa :: xs ++ ys) : by simp
-      ... = reverse (xs ++ ys) ++ [aa] : by simp
-      ... = reverse ys ++ reverse xs  ++ [aa] : by simp[hyp]
-      ... = reverse ys ++ reverse (aa :: xs) : by simp
+   assume aa: A,
+   assume xs : list A ,
+   assume hyp: reverse (xs ++ ys) =  reverse ys ++ reverse xs ,
+   show reverse ((aa :: xs ) ++ ys) = reverse ys ++ reverse (aa:: xs) , from calc
+     reverse ((aa:: xs) ++ys) = reverse_core (xs ++ ys) [] ++ [aa] : by simp[reverse, reverse_core , helper2 (xs ++ ys) ([aa])]
+     ... = reverse (xs ++ ys) ++ [aa] : by simp[reverse]
+     ... = reverse ys ++ reverse xs ++ [aa] : by simp[hyp]
+     ... = reverse ys ++ reverse (aa::xs) : by simp[reverse, reverse_core , helper2 xs ([aa])]
   )
 
 
@@ -74,3 +88,4 @@ list.rec_on ls
     
       
   )
+-/
