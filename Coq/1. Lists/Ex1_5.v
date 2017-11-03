@@ -121,3 +121,21 @@ Proof.
         ++ simpl. rewrite IHxs. reflexivity. 
       * simpl. rewrite IHxs. reflexivity.
 Qed.
+
+
+Fixpoint unique {X: Type } `{EqDec X} (ls : list X): bool := 
+match ls with 
+| [] => true 
+| x::xs =>  eqb (occurs x xs) 0  && unique xs
+end.
+
+Theorem occurs_6 {X : Type} `{EqDec X} (ls : list X): 
+  unique (remDups ls) = true.
+Proof.
+  induction ls.
+  + reflexivity.
+  + simpl. rewrite helper3. destruct (occurs a ls =? 0) eqn:?.
+    - simpl. rewrite helper3. rewrite Heqb.  rewrite IHls. reflexivity.
+    - intuition.
+Qed.
+
