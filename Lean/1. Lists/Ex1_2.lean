@@ -76,16 +76,16 @@ list.rec_on ls
     show reverse (replace x y []) = replace x y (reverse []), from rfl
   )
   (
-   
     assume aa : a,
     assume ls : list a,
-    let tmp := (if eq x aa then y else x) in
+    let tmp := (if eq x aa then y else aa) in
     assume hyp:reverse (replace x y ls) = replace x y(reverse ls),
     show reverse (replace x y (aa :: ls)) = replace x y(reverse (aa :: ls)), from calc
-      reverse (replace x y (aa :: ls)) = reverse ( (if eq x aa then y else x) :: replace x y ls) : by simp[replace]
-      ... = reverse (replace x y ls) ++ [(if eq x aa then y else x)] : by simp[reverse]
-      ... = 
-    
-      
+      reverse (replace x y (aa :: ls)) = reverse (tmp :: replace x y ls) : by simp[replace]
+      ... = reverse (replace x y ls) ++ [tmp] : by simp[reverse, reverse_core , helper2 (replace x y ls) ([tmp])]
+      ... = replace x y (reverse ls) ++ [tmp] :by simp[hyp]
+      ... = replace x y (reverse ls) ++ replace x y [aa] : by simp[replace]
+      ... = replace x y (reverse  ls ++ [aa]) :by simp[helper1 x y (reverse ls) ([aa])]
+      ... = replace x y (reverse (aa::ls)) : by simp[reverse, reverse_core , helper2 ls ([aa])]
   )
--/
+
