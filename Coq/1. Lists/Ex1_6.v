@@ -119,11 +119,39 @@ Proof.
     - rewrite plus_Sn_m. apply le_n_S. rewrite Nat.leb_le in H0. rewrite H0. intuition.
 Qed.
 
- 
-      .
+
+
     
+Fixpoint list_exists {X : Type} (P : X -> bool)(ls : list X): bool :=
+match ls with 
+| [] => false
+| x::xs => P x || list_exists P xs
+end.
+
+Example list_exists_1 : list_exists (fun x => x <? 3) [4;3;7] = false.
+Proof. reflexivity. Qed.
+
+
+Example list_exists_2 : list_exists (fun x => x <? 4) [4;3;7] = true.
+Proof. reflexivity. Qed.
+
+Lemma list_exists_append {X : Type} (P : X -> bool) (xs ys : list X): 
+  list_exists P (xs++ys) = ( (list_exists P xs) || (list_exists P ys))%bool .
+Proof.
+  induction xs.
+  + reflexivity.
+  + simpl. rewrite IHxs. rewrite <- Bool.orb_assoc. reflexivity.
+Qed.
   
-  
+Lemma list_exists_3 {X :Type} (P : X -> bool) (xs : list (list X)): 
+  list_exists (list_exists P) xs = list_exists P (flatten xs).
+Proof.
+  induction xs.
+  + reflexivity.
+  + simpl. rewrite list_exists_append. rewrite IHxs. reflexivity.
+Qed.
+
+Definition list_exists2 {X : Type} (P : X -> bool) (xs : list X): bool :=
   
   
   
