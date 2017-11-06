@@ -47,55 +47,7 @@ qed
 declare inv_def[simp]
 
 
-
-theorem inv_add : "\<lbrakk> i \<le> j ; inv ins \<rbrakk> \<Longrightarrow> inv (add (i,j) ins)" 
-proof (induction ins)
-  case Nil
-  then show ?case  by simp
-next
-  case (Cons a ins)
-  assume hyp1:"i \<le> j \<Longrightarrow> Ex5_4.inv ins \<Longrightarrow> Ex5_4.inv (add (i, j) ins)"
-  and hyp2:"i \<le> j"
-  and hyp3:"Ex5_4.inv (a # ins)"
-  show ?case 
-  proof (cases "j < fst a - 1")
-    case True
-    have tmp:" (j + 2 \<le> fst a) = (0  \<le> fst a)" using True by simp
-    have "inv (add (i, j) (a # ins)) = inv  ((i,j)# a # ins)" using  True add.simps(2)[of "(i,j)" a ins] prod.sel(2)[of i j] by simp 
-    also have "\<dots> =  inv2 i  ((i,j)#a#ins)" by simp
-    also have "\<dots> = (i \<le> i \<and> i \<le> j \<and>  inv2 (j + 2) (a#ins))" by simp
-    also have "\<dots> = inv2 (j + 2) (a#ins)" using hyp2 by simp
-    also have "\<dots> = inv2 (j + 2) ((fst a , snd a)#ins)" using prod.collapse[symmetric , of a] by simp
-    also have "\<dots> = (0 \<le> fst a \<and> fst a \<le> snd a \<and>  inv2 (snd a + 2) ins)" by (subst inv2.simps(2), subst tmp , rule refl)
-    also have "\<dots> = inv (a#ins)" by (subst inv_def , subst (5) prod.collapse[symmetric], subst inv2.simps(2), rule refl)
-    finally  show ?thesis using hyp3 by simp
-  next
-    case False
-    assume c1:"\<not> j < fst a - 1"
-    then show ?thesis 
-    proof (cases "snd a < i - 1")
-      case True
-      from hyp3 have tmp:"0 \<le> fst a \<and> fst a \<le> snd a \<and> inv2 (snd a + 2) ins" by (subst (asm) inv_def, subst (asm) prod.collapse[symmetric], subst (asm) inv2.simps)
-
-      hence tmp2:"inv2 (snd a + 2) ins" by simp
-
-      with hyp3 have tmp3:"inv ins" using prod.collapse[symmetric, of a] inv2_monotone[of "snd a + 2" ins 0] by simp
-
-      with hyp1 hyp2 have tmp4:"inv (add (i, j) ins)" by simp
-
-      from tmp3 have "inv (add (i, j) (a # ins)) = inv (a # add (i,j) ins)" using True c1 by simp
-      also have "\<dots> = inv2 (snd a + 2) (add (i,j) ins)" using tmp prod.collapse[symmetric , of a] by (metis inv_def inv2.simps(2))
-      also have "\<dots> = inv (add (i,j) ins)" sorry
-      show ?thesis 
-    next
-      case False
-      then show ?thesis 
-    qed
-
-  qed
-qed
-
-lemma "inv2 a ins \<Longrightarrow> i \<le> j \<Longrightarrow> a \<le> i  \<Longrightarrow> inv2 a (add (i,j) ins)" 
+lemma helper:"inv2 a ins \<Longrightarrow> i \<le> j \<Longrightarrow> a \<le> i  \<Longrightarrow> inv2 a (add (i,j) ins)" 
 proof (induction ins arbitrary : a i j)
   case Nil
   then show ?case by simp
@@ -111,14 +63,65 @@ next
 
 
   show ?case 
-  proof (cases "j < snd aa - 1")
+  proof (cases "j < fst aa - 1")
     case True
-    from 
-    then show ?thesis using hyp3 hyp2 hyp4 inv2_monotone by ()
+    hence tmp:"j + 2 \<le> fst aa" by simp
+    have "inv2 a (add (i, j) (aa # ins)) = inv2 a ((i,j) # aa # ins)" using True inv2.simps hyp3 prod.collapse[of aa , symmetric]  add.simps(2) prod.sel(2)[of i j] by simp
+    also have "\<dots>  = inv2 (j + 2) (aa # ins)" using hyp3 hyp4 by simp
+    also have "\<dots> = inv2 a (aa # ins)" using hyp2 tmp inv2.simps(2) prod.collapse[of aa , symmetric]  hyp4 by metis
+    finally show ?thesis using hyp2 by simp
+  next
+    case False
+    assume c1:"\<not> j < fst aa - 1"
+    then show ?thesis 
+    proof (cases "snd aa < i- 1")
+      case True
+      from hyp2 have "inv2 (snd aa + 2) ins" using inv2.simps(2) prod.collapse[of aa, symmetric] by metis
+      with hyp1[of "snd aa + 2" i j] hyp3 True have tmp:"inv2 (snd aa + 2) (add (i, j) ins)" by simp
+      have "inv2 a (add (i, j) (aa # ins)) = inv2 a (aa # add (i,j) ins)" using False True prod.collapse[of aa , symmetric] prod.sel add.simps(2) by simp
+      also have "\<dots> = inv2 (snd aa + 2) (add (i,j) ins)" using hyp2 inv2.simps(2) prod.collapse[of aa , symmetric]  by metis
+      finally show ?thesis using tmp by simp
+    next
+      case False
+
+      have tmp:"min i (fst aa) \<le> max j (snd aa)" using hyp3 hyp2 by auto
+
+      have tmp2:"a \<le> min i (fst aa)" using hyp2 hyp4 min_def prod.collapse[of aa , symmetric] le_trans inv2.simps by metis
+
+      have "a \<le> snd aa + 2" using hyp2 prod.collapse[symmetric , of aa]  inv2.simps(2) le_trans trans_le_add1 by metis
+
+      hence "inv2 a ins"  using hyp2 inv2_monotone inv2.simps(2) prod.collapse[of aa, symmetric] by metis
+
+      hence tmp3:"inv2 a (add (min i (fst aa), max j (snd aa)) ins)" using hyp1[of a "min i (fst aa)" "max j (snd aa)"] tmp tmp2 by simp
+
+      have "inv2 a (add (i, j) (aa # ins)) = inv2 a (add (min  i (fst aa), max j (snd aa)) ins)" 
+        by (subst add.simps , subst prod.sel(2), subst c1, subst if_False, subst prod.sel(1), subst False , subst if_False, simp)
+      then show ?thesis using tmp3 by simp
+    qed
+  qed
+qed
+
+
+
+theorem inv_add : "\<lbrakk> i \<le> j ; inv ins \<rbrakk> \<Longrightarrow> inv (add (i,j) ins)" using helper[of 0 ins i j] by simp
+
+
+lemma helper2:"set_of (xs @ ys) = set_of xs \<union> set_of ys"  by (induction xs ;auto)
+
+theorem set_of_add: 
+  "\<lbrakk> i \<le> j; inv ins \<rbrakk> \<Longrightarrow> set_of (add (i,j) ins) = set_of [(i,j)] \<union> set_of ins"
+proof (induction ins)
+  case Nil
+  then show ?case by simp
+next
+  case (Cons aa ins)
+  then show ?case 
+  proof (cases "j < fst aa - 1")
+    case True
+    then show ?thesis 
   next
     case False
     then show ?thesis sorry
 qed
 
-  
 qed
