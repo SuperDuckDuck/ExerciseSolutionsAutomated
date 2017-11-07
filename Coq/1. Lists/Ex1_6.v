@@ -152,7 +152,18 @@ Proof.
 Qed.
 
 Definition list_exists2 {X : Type} (P : X -> bool) (xs : list X): bool :=
-  
+negb (forallb  (fun x => negb (P x)) xs) .
+
+
+
+Theorem list_exists_eq_list_exists2 {X : Type} (P : X -> bool) (xs : list X):
+  list_exists P xs = list_exists2 P xs.
+Proof.
+  induction xs.
+  + reflexivity.
+  + unfold list_exists2. simpl. rewrite IHxs. rewrite Bool.negb_andb. rewrite Bool.negb_involutive.
+    reflexivity.
+Qed.
   
   
   
