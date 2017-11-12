@@ -1,7 +1,7 @@
 Require Import List.
 Import ListNotations.
-Require Import ListSet.
 Require Import EquivDec.
+Require Import Coq.MSets.MSetWeakList.
 
 Fixpoint list_union {X : Type} `{EqDec X}(ls ys : list X): list X := 
 match ls with 
