@@ -78,17 +78,54 @@ lemma exs1_disproof  : ¬ (∀ (X: Type) (P Q : X -> bool) (xs : list X) , exs (
   assume hyp: ∀ (X: Type) (P Q : X -> bool) (xs : list X) , exs (λ x , P x && Q x) xs = exs P xs && exs Q xs,
   have a:tmp1 = tmp2 , by simp[tmp1,tmp2,hyp], 
 
-
   have b: (tmp1 = tmp2) = (ff = tt) , from calc
-    (tmp1 = tmp2) = (ff = tmp2): 
-  begin 
-    reflexivity 
-  end
-    ... = (ff = tt) : 
-  begin 
-    reflexivity
-  end
+    (tmp1 = tmp2) = (ff = tmp2): by reflexivity 
+    ... = (ff = tt) : by reflexivity,
   
-  have c :ff = tt ,  
-  begin 
-    rewrite 
+  have c: (ff = tt) = false, by simp,
+  have d: false ,
+  begin
+    rewrite ← c,
+    rewrite ← b,
+    exact a
+  end, 
+  show  false , from d
+
+   
+lemma exs_map_composition {X Y : Type}: forall (P : Y -> bool) (f : X -> Y) (xs : list X), exs P (map f xs) = exs (P ∘ f) xs 
+| P f [] := rfl
+| P f (x::xs) := 
+  show  exs P (map f (x::xs)) = exs (P ∘ f) (x::xs), from calc
+    exs P (map f (x::xs)) = exs P (f x :: map f xs) : by simp
+    ... = P (f x) || exs P (map f xs) : by simp
+    ... = P (f x) || exs (P ∘ f) xs : by simp[exs_map_composition]
+    ... = (P ∘ f) x || exs (P ∘ f) xs : by simp
+    ... = exs (P ∘ f) (x ::xs) : by simp
+
+
+lemma orb_assoc (b1 b2 b3 : bool) : b1 || b2 || b3 = b1 || (b2 || b3) := by cases b1 ; simp 
+
+lemma app_exs {X : Type} : forall (P : X -> bool )(xs ys :list X) , exs P (xs ++ ys) = (exs P xs || exs P ys)
+| P [] ys := by simp
+| P (x::xs) ys := 
+  show exs P ((x::xs) ++ ys) = (exs P (x::xs) || exs P ys), from calc
+    exs P ((x::xs) ++ ys) = exs P (x :: (xs ++ ys)) : by simp
+    ... = P x || exs P (xs ++ ys) : by simp
+    ... = P x || (exs P xs || exs P ys) : by simp[app_exs]
+    ... = P x || exs P xs || exs P ys : by simp[orb_assoc]
+    ... = exs P (x::xs) || exs P ys : by simp
+
+
+lemma orb_comm (b1 b2 : bool) : (b1 || b2) = (b2 || b1) := by cases b1 ; cases b2 ; reflexivity 
+
+lemma exs_rev {X : Type}: forall (P : X -> bool)(xs : list X), exs P (reverse xs) = exs P xs 
+| P [] := rfl
+| P (x::xs) := 
+  show  exs P (reverse (x::xs)) = exs P (x::xs), from calc
+    exs P (reverse (x::xs)) = exs P (reverse_core xs [] ++ [x]) : by simp[reverse,reverse_core, app_rev_core xs ([x])]
+    ... = exs P (reverse xs ++ [x]) : by simp[reverse]
+    ... = exs P (reverse xs) || exs P [x] : by simp[app_exs]
+    ... = (exs P xs || exs P [x]) : by simp[exs_rev]
+    ... = (exs P [x] || exs P xs) : by simp[orb_comm]
+    ... = P x || exs P xs : by simp
+    ... = exs P (x::xs) : by simp
