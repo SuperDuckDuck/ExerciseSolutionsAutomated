@@ -68,4 +68,27 @@ lemma alls2 {X:Type} : forall (P : X -> bool) (xs :list X), alls P (reverse xs) 
      ... = alls P [x] && alls P xs  : by simp[alls2, andb_comm]
      ... = alls P (x::xs) : by simp
 
-lemma exs1_disproof  : ¬ (∀ (X: Type) (P Q : X -> bool) (xs : list X) , exs (λ x , P x && Q x) xs = exs P xs && exs Q xs)
+
+
+
+
+lemma exs1_disproof  : ¬ (∀ (X: Type) (P Q : X -> bool) (xs : list X) , exs (λ x , P x && Q x) xs = exs P xs && exs Q xs) :=
+  let tmp1 := exs (λ x , (λ y, y = 0) x && (λ y , y = 1) x) [0,1] in
+  let tmp2 := (exs (λ y, y = 0) [0,1] && exs (λ y , y = 1) [0,1]) in
+  assume hyp: ∀ (X: Type) (P Q : X -> bool) (xs : list X) , exs (λ x , P x && Q x) xs = exs P xs && exs Q xs,
+  have a:tmp1 = tmp2 , by simp[tmp1,tmp2,hyp], 
+
+
+  have b: (tmp1 = tmp2) = (ff = tt) , from calc
+    (tmp1 = tmp2) = (ff = tmp2): 
+  begin 
+    reflexivity 
+  end
+    ... = (ff = tt) : 
+  begin 
+    reflexivity
+  end
+  
+  have c :ff = tt ,  
+  begin 
+    rewrite 
