@@ -129,3 +129,27 @@ lemma exs_rev {X : Type}: forall (P : X -> bool)(xs : list X), exs P (reverse xs
     ... = (exs P [x] || exs P xs) : by simp[orb_comm]
     ... = P x || exs P xs : by simp
     ... = exs P (x::xs) : by simp
+
+
+lemma exs_term_eq {X : Type}: forall (P Q : X -> bool)(xs : list X), exs (λ x , P x || Q x) xs = exs P xs || exs Q xs
+| P Q [] := rfl
+| P Q (x::xs) :=
+  show  exs (λ x , P x || Q x) (x::xs) = exs P (x::xs) || exs Q (x::xs), from calc
+     exs (λ x , P x || Q x) (x::xs) =  (λ x , P x || Q x) x ||  exs (λ x , P x || Q x) xs : by simp
+     ... =  (λ x , P x || Q x) x ||  exs P xs || exs Q xs : by simp[orb_assoc , exs_term_eq]
+     ... = P x || Q x || exs P xs || exs Q xs : by simp
+     ... = P x || exs P xs || Q x || exs Q xs : by simp[orb_comm, orb_assoc]
+     ... = exs P (x::xs) || exs Q (x::xs) :by simp[orb_assoc]
+
+
+lemma de_morgan_andb (b1 b2 : bool) : bnot (b1 && b2) = bnot b1 || bnot b2 := by cases b1 ; simp
+
+lemma ex_as_all {X : Type}:forall (P : X -> bool)(xs :list X), exs P xs = bnot (alls (bnot ∘ P) xs)
+| P [] := rfl
+| P (x::xs) := 
+  show exs P (x::xs) = bnot (alls (bnot ∘ P) (x::xs)), from calc
+    exs P (x::xs) = P x || exs P xs : by simp
+    ... = P x || bnot (alls (bnot ∘ P) xs) : by simp[ex_as_all]
+    ... = bnot (bnot (P x) && alls (bnot ∘ P) xs) : by simp[de_morgan_andb]
+    ... = bnot (alls (bnot ∘ P) (x::xs)) : by simp
+
