@@ -3,7 +3,7 @@ theory Ex5_3
 begin 
 
 
-datatype ('a , 'v) trie = Trie "'v option" "('a \<times> ('a , 'v) trie) list"
+datatype ('a , 'v) trie = Trie "'v option" "('a \<times> ('a  , 'v) trie) list"
 
 
 primrec "value" :: "('a , 'v) trie \<Rightarrow> 'v option" where 
@@ -16,5 +16,5 @@ primrec assoc :: "('key \<times> 'val)list \<Rightarrow> 'key \<Rightarrow> 'val
 "assoc [] x = None"|
 "assoc (x#xs) key = (if key=  fst x then Some (snd x) else assoc xs key)"
 
-primrec lookup :: "" where 
+primrec lookup :: "('a , 'v)trie \<Rightarrow> 'a list \<Rightarrow> 'v option" where 
 "lookup "
