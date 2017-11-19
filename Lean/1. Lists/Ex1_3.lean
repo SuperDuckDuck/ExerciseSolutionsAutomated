@@ -1,4 +1,5 @@
 open list 
+open decidable
 open bool
 
 @[simp]
@@ -153,3 +154,30 @@ lemma ex_as_all {X : Type}:forall (P : X -> bool)(xs :list X), exs P xs = bnot (
     ... = bnot (bnot (P x) && alls (bnot ∘ P) xs) : by simp[de_morgan_andb]
     ... = bnot (alls (bnot ∘ P) (x::xs)) : by simp
 
+
+definition is_in {A : Type}[decidable_eq A] : A -> list A -> bool 
+| _ [] := ff
+| val (x::xs) := if val = x then tt else is_in val xs
+
+
+lemma to_bool_true_tt_orb (b : bool) : to_bool true = (to_bool true || b) := by reflexivity
+
+lemma is_in_representation_exs {A : Type} [decidable_eq  A]: forall  (val : A) (ls : list A) ,
+  is_in val ls = exs  (λ x ,  val = x) ls 
+| val [] := rfl
+| val (x::ls) := 
+  have h1 : to_bool true = tt , from rfl,
+  show  is_in val (x::ls) = exs  (λ x ,  val = x) (x::ls) ,
+  begin 
+    simp[is_in],
+    by_cases (val = x),
+    rewrite h at  ,  
+  end
+ 
+
+
+/- (
+    assume c1: val = x,
+    show is_in val (x::ls) = exs  (λ x ,  val = x) (x::ls), from calc
+      is_in val (x::ls) = 
+-/
